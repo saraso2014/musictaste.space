@@ -74,6 +74,7 @@ const _ArtistFloaters = (props: {
             width: '100%',
             backgroundSize: 'contain',
             backgroundImage: `url(${artist.images[0]?.url})`,
+            borderRadius: '20%',
           }}
           key={'artistFloat' + index.toString()}
           initial="initial"
