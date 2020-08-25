@@ -13,7 +13,7 @@ export const zoomFadeIn = (delay = 0, duration = 0.5) => ({
   exit: {
     scale: 0.5,
     opacity: 0,
-    transition: { ...transition, duration: 1.5 },
+    transition: { ...transition(duration) },
   },
 })
 
