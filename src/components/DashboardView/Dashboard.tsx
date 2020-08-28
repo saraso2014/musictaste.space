@@ -417,9 +417,9 @@ export const Me = () => {
                             id="menu-button-3"
                             className="menu button3"
                             unselectable="on"
-                            onClick={onClickHandle('/playlist')}
+                            onClick={onClickHandle('/playlists/create')}
                           >
-                            Make Me A Playlist
+                            Make A Playlist
                           </Menu3>
                           <br />
                           {Math.abs(

@@ -1,6 +1,5 @@
 /* eslint-disable react/display-name */
 import Color from 'color'
-import 'emoji-mart/css/emoji-mart.css'
 import emojiRegex from 'emoji-regex'
 import { AnimatePresence, motion } from 'framer-motion'
 import GraphemeSplitter from 'grapheme-splitter'
