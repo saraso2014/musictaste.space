@@ -7,8 +7,8 @@ import Marquee, {
 } from 'react-marquee-slider'
 import { shrinkOnHover } from '../../constants/animationVariants'
 import useWindowSize from '../../hooks/useWindowSize'
-import { SelectOptions } from './index'
 import { Dot } from '../Aux/Dot'
+import { SelectOptions } from './index'
 
 const MarqueeComponent = ({
   selectedOptions,
@@ -266,7 +266,7 @@ const MarqueeComponent = ({
   ) : (
     <div className="marquee-area" style={{ backgroundColor }}>
       <div className="w-100 h-100 d-flex flex-row justify-content-center align-items-center h1">
-        Waiting for seeds<Dot>.</Dot>
+        Select some seeds<Dot>.</Dot>
         <Dot>.</Dot>
         <Dot>.</Dot>
       </div>
