@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
+import { format } from 'date-fns'
 import React from 'react'
 import { SelectOptions } from '.'
 
@@ -302,4 +303,22 @@ export const createSelectionDescription = (selections: SelectOptions[]) => {
       </span>
     )
   }
+}
+
+export const createPlaylistTitle = (
+  state: SpotifyApi.RecommendationsOptionsObject,
+  selections: SelectOptions[]
+) => {
+  const targets = [
+    'target_acousticness',
+    'target_danceability',
+    'target_energy',
+    'target_valence',
+    'target_tempo',
+    'target_liveness',
+    'target_popularity',
+  ]
+  // todo: use targets for names
+  const date = format(new Date(), 'MMM d')
+  return `${date.toLowerCase()}: a playlist.`
 }

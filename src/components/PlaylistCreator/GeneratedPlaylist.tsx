@@ -4,9 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { times } from 'lodash'
 import React, { useContext, useEffect, useState } from 'react'
 import SimpleBar from 'simplebar-react'
+import { SelectOptions } from '.'
 import { transition } from '../../constants/animationVariants'
 import { UserDataContext } from '../../contexts/UserData'
 import useWindowSize from '../../hooks/useWindowSize'
+import { createPlaylistTitle } from './SentenceDescriptions'
 
 interface TrackProps {
   backgroundColor: string
@@ -118,12 +120,16 @@ const DemoTrack = ({
 
 const GeneratedPlaylist = ({
   recommendationOptions,
+  seeds,
   playlistTracks,
   saveToSpotify,
 }: {
   recommendationOptions: SpotifyApi.RecommendationsOptionsObject
+  seeds: SelectOptions[]
   playlistTracks: SpotifyApi.TrackObjectFull[]
-  saveToSpotify: () => Promise<{ id: string; name: string } | undefined>
+  saveToSpotify: (
+    title: string
+  ) => Promise<{ id: string; name: string } | undefined>
 }) => {
   const { userData } = useContext(UserDataContext)
   const [loading, setLoading] = useState(false)
@@ -139,7 +145,7 @@ const GeneratedPlaylist = ({
 
   const onSaveClick = () => {
     setLoading(true)
-    saveToSpotify()
+    saveToSpotify(createPlaylistTitle(recommendationOptions, seeds))
       .then((res) => {
         if (res) {
           setPlaylistURI(res.id)

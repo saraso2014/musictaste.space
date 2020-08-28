@@ -73,13 +73,27 @@
   }
   .title-div {
     margin-bottom: 2em;
+    display: flex;
+    align-items: center;
     @media (max-width: 600px) {
       margin-left: 10px;
       margin-right: 10px;
       // margin-bottom: 10vh;
     }
     @media (max-width: 480px) {
-      padding: 2px 4px;
+      padding: 2px 0px;
+    }
+    .beta {
+      background-color: rgba($color: #16264c, $alpha: 0.5);
+      padding: 0.2em 1em;
+      margin-top: 0.3em;
+      color: white;
+      border-radius: 5px;
+      margin-left: 0.5em;
+      font-size: 1.5em;
+      @media (max-width: 480px) {
+        font-size: 1em;
+      }
     }
   }
 
@@ -210,18 +224,6 @@
       border-radius: 5px;
       margin-bottom: 0.5em;
     }
-    // .overlay {
-    //   z-index: 10;
-    //   position: absolute;
-    //   margin-top: 400px;
-    //   height: 100px;
-    //   width: 415px;
-    //   @media (max-width: 900px) {
-    //     width: 80vw;
-    //   }
-    //   position: absolute;
-    //   background-image: linear-gradient(to bottom, transparent, #212121);
-    // }
   }
   .playlist-output-container {
     // background-color: #212121;

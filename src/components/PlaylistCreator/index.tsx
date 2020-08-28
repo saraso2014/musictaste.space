@@ -186,10 +186,10 @@ const PlaylistCreator = () => {
       )
   }
 
-  const saveToSpotify = async (emojis?: string) => {
+  const saveToSpotify = async (title?: string) => {
     if (playlistTracks.length && currentUser) {
       try {
-        const name = emojis || 'A playlist'
+        const name = title || 'A playlist'
         const id = await spotify
           .createPlaylist(currentUser.uid.replace('spotify:', ''), {
             name,
@@ -343,6 +343,7 @@ const PlaylistCreator = () => {
             <a id="my-account" className="title" href="#generator">
               Playlist Generator
             </a>
+            <div className="beta">beta</div>
           </div>
           {!loading ? (
             <AsyncSelect
@@ -391,6 +392,7 @@ const PlaylistCreator = () => {
             <div className="col-lg-5 offset-md-1 col output-container rounded">
               <GeneratedPlaylist
                 playlistTracks={playlistTracks}
+                seeds={selectedOptions}
                 recommendationOptions={recommendationOptions}
                 saveToSpotify={saveToSpotify}
               />

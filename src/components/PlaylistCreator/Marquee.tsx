@@ -8,6 +8,7 @@ import Marquee, {
 import { shrinkOnHover } from '../../constants/animationVariants'
 import useWindowSize from '../../hooks/useWindowSize'
 import { SelectOptions } from './index'
+import { Dot } from '../Aux/Dot'
 
 const MarqueeComponent = ({
   selectedOptions,
@@ -265,7 +266,9 @@ const MarqueeComponent = ({
   ) : (
     <div className="marquee-area" style={{ backgroundColor }}>
       <div className="w-100 h-100 d-flex flex-row justify-content-center align-items-center h1">
-        Provide me some inspiration!
+        Waiting for seeds<Dot>.</Dot>
+        <Dot>.</Dot>
+        <Dot>.</Dot>
       </div>
     </div>
   )
