@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { emojiIndex } from 'emoji-mart'
 import emoji from 'node-emoji'
 
 export const initialState: SpotifyApi.RecommendationsOptionsObject = {
@@ -167,18 +166,3 @@ export const optionsReducer = (state: any, action: OptionsAction): any => {
       throw new Error()
   }
 }
-
-// const createDescription = (state: SpotifyApi.RecommendationsOptionsObject) => {}
-
-export const supportedEmojis = targetMap
-  .map((e) => (e[0] as unknown) as string)
-  .flat()
-  .map((e) => {
-    const key = emoji.find(e)?.key
-    if (key) {
-      // @ts-ignore
-      return emojiIndex.emojis[key]?.name
-    } else {
-      return undefined
-    }
-  })
