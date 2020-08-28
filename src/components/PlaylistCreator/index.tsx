@@ -1,19 +1,21 @@
-import { debounce } from 'lodash'
+/* eslint-disable @typescript-eslint/camelcase */
+import Color from 'color'
+import { cloneDeep, debounce } from 'lodash'
+import Vibrant from 'node-vibrant'
 import React, { useContext, useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet'
+import { ActionMeta, OptionTypeBase, Theme, ValueType } from 'react-select'
 import makeAnimated from 'react-select/animated'
 import AsyncSelect from 'react-select/async'
-
-import Color from 'color'
-import { AnimatePresence, motion } from 'framer-motion'
-import Vibrant from 'node-vibrant'
-import { ActionMeta, OptionTypeBase, Theme, ValueType } from 'react-select'
+import { useToasts } from 'react-toast-notifications'
 import Spotify from 'spotify-web-api-js'
-import { growAndShrink, zoomFadeIn } from '../../constants/animationVariants'
 import { AuthContext } from '../../contexts/Auth'
 import { UserDataContext } from '../../contexts/UserData'
+import Footer from '../Footer'
 import Navbar from '../Navbars/Navbar'
+import GeneratedPlaylist from './GeneratedPlaylist'
 import MarqueeComponent from './Marquee'
+import Options from './Options'
 
 export interface SelectOptions {
   label: string
@@ -23,10 +25,13 @@ export interface SelectOptions {
     data: SpotifyApi.ArtistObjectFull | SpotifyApi.TrackObjectFull
   }
 }
+
 const animatedComponents = makeAnimated()
+const spotify = new Spotify()
 
 const PlaylistCreator = () => {
   const { currentUser } = useContext(AuthContext)
+  const { addToast } = useToasts()
   const { importData, importDataExists, spotifyToken } = useContext(
     UserDataContext
   )
@@ -34,13 +39,17 @@ const PlaylistCreator = () => {
 
   const [userDataOptions, setUserDataOptions] = useState<SelectOptions[]>([])
   const [selectedOptions, setSelectedOptions] = useState<SelectOptions[]>([])
+  const [recommendationOptions, setRecommendationOptions] = useState<
+    SpotifyApi.RecommendationsOptionsObject
+  >({})
   const [artistBackgroundURL, setArtistBackgroundURL] = useState('')
   const [backgroundColor, setBackgroundColor] = useState('#c7ecee')
   const [textColor, setTextColor] = useState('gray')
   const [altTextColor, setAltTextColor] = useState('gray')
-  const [altBackgroundColor, setAltBackgroundColor] = useState('#dff9fb')
-
-  const spotify = new Spotify()
+  // const [altBackgroundColor, setAltBackgroundColor] = useState('#dff9fb')
+  const [playlistTracks, setPlaylistTracks] = useState<
+    SpotifyApi.TrackObjectFull[]
+  >([])
 
   const handleChange = (
     val: ValueType<OptionTypeBase>,
@@ -50,6 +59,9 @@ const PlaylistCreator = () => {
     const arr = Array.from(selectedOptions)
     switch (action.action) {
       case 'select-option':
+        if (selectedOptions.length >= 5) {
+          return false
+        }
         setSelectedOptions(value)
         return
       case 'remove-value':
@@ -115,7 +127,7 @@ const PlaylistCreator = () => {
             }
             setTextColor(t.hex())
             setAltTextColor(u.hex())
-            setAltBackgroundColor(d.hex())
+            // setAltBackgroundColor(d.hex())
             setBackgroundColor(c.hex())
           }
         })
@@ -124,6 +136,79 @@ const PlaylistCreator = () => {
       setColors(artistBackgroundURL)
     }
   }, [artistBackgroundURL])
+
+  const formatOptions = (options: SpotifyApi.RecommendationsOptionsObject) => {
+    const newOpts = cloneDeep(options)
+    if (newOpts.target_popularity) {
+      newOpts.target_popularity = Math.floor(newOpts.target_popularity * 100)
+      if (newOpts.target_popularity < 30) {
+        newOpts.max_popularity = 50
+      }
+      if (newOpts.target_popularity > 70) {
+        newOpts.min_popularity = 60
+      }
+    }
+    if (newOpts.target_valence) {
+      if (newOpts.target_valence < 0.3) {
+        newOpts.max_valence = 0.6
+      }
+      if (newOpts.target_valence > 0.7) {
+        newOpts.min_valence = 0.5
+      }
+    }
+    if (newOpts.target_acousticness) {
+      if (newOpts.target_acousticness > 0.5) {
+        newOpts.min_acousticness = 0.2
+      }
+    }
+    if (newOpts.target_energy) {
+      if (newOpts.target_energy < 0.3) {
+        newOpts.max_energy = 0.6
+      }
+      if (newOpts.target_energy > 0.7) {
+        newOpts.min_energy = 0.5
+      }
+    }
+    return newOpts
+  }
+  const getSuggestions = async () => {
+    if (!selectedOptions.length) {
+      addToast('Provide some artists or tracks as inspiration first!', {
+        appearance: 'warning',
+        autoDismiss: true,
+      })
+      return
+    }
+    return spotify
+      .getRecommendations(formatOptions(recommendationOptions))
+      .then((res) =>
+        setPlaylistTracks(res.tracks as SpotifyApi.TrackObjectFull[])
+      )
+  }
+
+  const saveToSpotify = async (emojis?: string) => {
+    if (playlistTracks.length && currentUser) {
+      try {
+        const name = emojis || 'A playlist'
+        const id = await spotify
+          .createPlaylist(currentUser.uid.replace('spotify:', ''), {
+            name,
+            description: 'Made on musictaste.space',
+            public: true,
+          })
+          .then((res) => res.id)
+        await spotify.addTracksToPlaylist(
+          id,
+          playlistTracks.slice(0, 50).map((t) => `spotify:track:${t.id}`)
+        )
+        return { id, name }
+      } catch (e) {
+        addToast('There was an error creating your playlist.', {
+          appearance: 'error',
+        })
+      }
+    }
+  }
 
   useEffect(() => {
     if (selectedOptions.length) {
@@ -168,13 +253,12 @@ const PlaylistCreator = () => {
         getArtists(ids).then(() => setLoading(false))
       }
     }
-  }, [importData, importDataExists])
+  }, [importData, importDataExists, spotifyToken])
 
   const searchSpotify = (
     inputVal: string,
     callback: (res: SelectOptions[]) => void
   ) => {
-    console.log('called')
     if (inputVal.length > 3) {
       spotify.search(inputVal, ['track', 'artist']).then((res) => {
         let results: SelectOptions[] = []
@@ -231,6 +315,30 @@ const PlaylistCreator = () => {
         style={{ backgroundColor: `${backgroundColor}` }}
       >
         <div className="container pad-container">
+          {!loading ? (
+            <div className="mt-0">
+              <div className="d-none d-lg-block w-100 h-100">
+                <MarqueeComponent
+                  selectedOptions={selectedOptions}
+                  backgroundColor={
+                    Color(backgroundColor).contrast(Color('white')) > 1
+                      ? Color(backgroundColor).lighten(0.05).hex()
+                      : Color(backgroundColor).darken(0.1).hex()
+                  }
+                  recommendationOptions={recommendationOptions}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="w-100 h-100 d-none d-lg-block">
+              <div className="marquee-area">
+                <div className="loading" />
+              </div>
+            </div>
+          )}
+
+          <div className="separator" />
+          <div className="row m-1 mt-5" />
           <div className="title-div">
             <a id="my-account" className="title" href="#generator">
               Playlist Generator
@@ -242,6 +350,7 @@ const PlaylistCreator = () => {
               isMulti={true}
               cacheOptions={true}
               defaultOptions={true}
+              value={selectedOptions}
               components={animatedComponents}
               onChange={handleChange}
               theme={selectTheme}
@@ -251,56 +360,45 @@ const PlaylistCreator = () => {
                 maxWait: 2000,
               })}
             />
-          ) : null}
-          {!loading ? (
-            <div className="mt-5">
-              <div className="d-flex d-lg-none flex-row justify-content-center align-items-center flex-wrap">
-                <AnimatePresence>
-                  {selectedOptions.map((option, i) => (
-                    <motion.div
-                      key={'option-div-' + option.value}
-                      animate={true}
-                    >
-                      <motion.div
-                        key={'option-' + option.value}
-                        initial="initial"
-                        exit="exit"
-                        animate="enter"
-                        variants={zoomFadeIn(0.5)}
-                      >
-                        <motion.div
-                          animate="growAndShrink"
-                          variants={growAndShrink(1.1, 0, 5)}
-                          className="rounded m-2 md:m-3 option-images"
-                          style={{
-                            backgroundSize: 'cover',
-                            backgroundImage: `url(${
-                              option.data
-                                ? option.data?.type === 'artist'
-                                  ? (option.data
-                                      .data as SpotifyApi.ArtistObjectFull)
-                                      .images[0].url
-                                  : (option.data
-                                      .data as SpotifyApi.TrackObjectFull).album
-                                      .images[0].url
-                                : null
-                            })`,
-                          }}
-                        />
-                      </motion.div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-              <div className="d-none d-lg-block w-100 h-100">
-                <MarqueeComponent
+          ) : (
+            <div className="loading rounded" style={{ height: '40px' }} />
+          )}
+          <div className="row m-1 mt-5">
+            {!loading ? (
+              <div
+                className="col-lg-6 options-container rounded p-3 p-md-3"
+                style={{
+                  backgroundColor:
+                    Color(backgroundColor).contrast(Color('white')) > 1
+                      ? Color(backgroundColor).lighten(0.05).hex()
+                      : Color(backgroundColor).darken(0.1).hex(),
+                }}
+              >
+                <Options
                   selectedOptions={selectedOptions}
-                  backgroundColor={Color(backgroundColor).lighten(0.05).hex()}
+                  setOptions={setRecommendationOptions}
+                  altColor={altTextColor}
+                  bgColor={backgroundColor}
+                  getSuggestions={getSuggestions}
                 />
               </div>
+            ) : (
+              <div className="col-lg-6 options-container rounded p-0">
+                <div className="loading p-3" style={{ height: '728px' }} />
+              </div>
+            )}
+            <div className="w-100 h-100 d-block d-lg-none m-3" />
+            <div className="col-lg-5 offset-md-1 col output-container rounded">
+              <GeneratedPlaylist
+                playlistTracks={playlistTracks}
+                recommendationOptions={recommendationOptions}
+                saveToSpotify={saveToSpotify}
+              />
             </div>
-          ) : null}
+          </div>
+          <div className="mb-5" />
         </div>
+        <Footer />
       </div>
     </>
   )

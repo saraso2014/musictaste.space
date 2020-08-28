@@ -1,7 +1,7 @@
 import React from 'react'
 
 const Footer = () => (
-  <div className="container footer" style={{ marginBottom: '2em' }}>
+  <div className="container footer" style={{ paddingBottom: '2em' }}>
     <hr />
     Made with ❤️ by{' '}
     <a
