@@ -18,6 +18,7 @@ import LinkDiscord from './components/LinkDiscord'
 import Lockdown from './components/LockdownView'
 import Login from './components/Login'
 import Match from './components/MatchView/Match'
+import PlaylistCreator from './components/PlaylistCreator'
 import Create from './components/PlaylistView/Create'
 import Playlist from './components/PlaylistView/Playlist'
 import RedirectMatch from './components/RedirectView'
@@ -121,6 +122,11 @@ export default function SpotifyCompatibility() {
                       exact={true}
                       path="/insights/all"
                       component={withTracker(InsightsAll)}
+                    />
+                    <Route
+                      exact={true}
+                      path="/playlists/create"
+                      component={withTracker(PlaylistCreator)}
                     />
                     <Route
                       exact={true}

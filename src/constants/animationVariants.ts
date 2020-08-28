@@ -1,4 +1,4 @@
-const transition = (duration = 0.5) => ({
+export const transition = (duration = 0.5) => ({
   duration,
   ease: [0.43, 0.13, 0.23, 0.96],
 })
@@ -13,7 +13,7 @@ export const zoomFadeIn = (delay = 0, duration = 0.5) => ({
   exit: {
     scale: 0.5,
     opacity: 0,
-    transition: { ...transition, duration: 1.5 },
+    transition: { ...transition(duration) },
   },
 })
 
