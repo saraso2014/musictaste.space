@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
+import emoji from 'node-emoji'
+
 export const initialState: SpotifyApi.RecommendationsOptionsObject = {
   market: 'from_token',
   limit: 50,
