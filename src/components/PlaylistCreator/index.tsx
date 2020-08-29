@@ -92,9 +92,9 @@ const PlaylistCreator = () => {
       primary75: Color(altTextColor).lighten(0.2).hex(),
       primary: textColor,
       neutral10: Color(backgroundColor).lighten(0.1).hex(),
-      neutral20: Color(backgroundColor).lighten(0.1).hex(),
-      neutral30: Color(backgroundColor).lighten(0.1).hex(),
-      neutral40: Color(backgroundColor).lighten(0.1).hex(),
+      // neutral20: Color(backgroundColor).lighten(0.1).hex(),
+      // neutral30: Color(backgroundColor).lighten(0.1).hex(),
+      // neutral40: Color(backgroundColor).lighten(0.1).hex(),
     },
   })
 

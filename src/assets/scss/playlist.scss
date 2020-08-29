@@ -158,6 +158,9 @@
     border-width: 0px;
     margin: 0em 2em;
     margin-bottom: 1em;
+    &::placeholder {
+      opacity: 0.5;
+    }
     @media (max-width: 900px) {
       margin: 0em 0em;
       margin-bottom: 1em;
