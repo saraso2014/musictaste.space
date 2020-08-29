@@ -269,7 +269,7 @@ export const createSelectionDescription = (selections: SelectOptions[]) => {
   if (!selections.length) {
     return (
       <span>
-        Pick some seeds to get started{' '}
+        Pick some artists or tracks to get started{' '}
         <span role="img" aria-label="hands">
           👏
         </span>

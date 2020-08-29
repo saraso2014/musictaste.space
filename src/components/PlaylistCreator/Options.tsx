@@ -131,7 +131,7 @@ const RecommendationOptionsSelector = ({
   return (
     <div className="d-flex flex-column" style={{ minHeight: '500px' }}>
       <div className="playlist-heading">
-        <div className="heading-title">Seeds </div>
+        <div className="heading-title">Inspiration</div>
       </div>
       <div className="seed-list d-flex flex-row">
         <AnimatePresence>
@@ -189,7 +189,7 @@ const RecommendationOptionsSelector = ({
         <div className="heading-title">Description</div>
       </div>
       <motion.div animate={true} className="mb-2">
-        {targetDesc || 'Specify more options below to refine your playlist.'}
+        {targetDesc || 'Play with the emojis below to refine your playlist 👌.'}
       </motion.div>
       <div className="playlist-heading">
         <div className="heading-title">Options</div>
