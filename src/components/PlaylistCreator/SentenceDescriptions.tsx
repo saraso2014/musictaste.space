@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { format } from 'date-fns'
+import { get, orderBy } from 'lodash'
 import React from 'react'
 import { SelectOptions } from '.'
 
@@ -246,7 +247,22 @@ const formatArtistsAsSentence = (
   }
 }
 
-export const getStringForTrackOrArtist = (selection: SelectOptions) => {
+const formatArtistsAsString = (
+  artists: SpotifyApi.ArtistObjectSimplified[]
+) => {
+  if (artists.length === 1) {
+    return artists[0].name
+  }
+  if (artists.length === 2) {
+    return `${artists[0].name} and ${artists[1].name}`
+  } else {
+    return `${artists[0].name}${artists
+      .slice(1, artists.length - 1)
+      .map((a) => `, ${a.name}`)} and ${artists[artists.length - 1].name}`
+  }
+}
+
+export const getSpanForTrackOrArtist = (selection: SelectOptions) => {
   if (selection.data?.type === 'track') {
     const data = selection.data.data as SpotifyApi.TrackObjectFull
     return (
@@ -265,6 +281,17 @@ export const getStringForTrackOrArtist = (selection: SelectOptions) => {
   }
 }
 
+export const getStringForTrackOrArtist = (selection: SelectOptions) => {
+  if (selection.data?.type === 'track') {
+    const data = selection.data.data as SpotifyApi.TrackObjectFull
+    return `${data.name} by ${formatArtistsAsString(data.artists)}`
+  }
+  if (selection.data?.type === 'artist') {
+    const data = selection.data.data as SpotifyApi.ArtistObjectFull
+    return data.name
+  }
+}
+
 export const createSelectionDescription = (selections: SelectOptions[]) => {
   if (!selections.length) {
     return (
@@ -280,15 +307,15 @@ export const createSelectionDescription = (selections: SelectOptions[]) => {
   if (selections.length === 1) {
     return (
       <span>
-        Using {getStringForTrackOrArtist(selections[0])} as inspiration.
+        Using {getSpanForTrackOrArtist(selections[0])} as inspiration.
       </span>
     )
   }
   if (selections.length === 2) {
     return (
       <span>
-        Using {getStringForTrackOrArtist(selections[0])} and{' '}
-        {getStringForTrackOrArtist(selections[1])} as inspiration.
+        Using {getSpanForTrackOrArtist(selections[0])} and{' '}
+        {getSpanForTrackOrArtist(selections[1])} as inspiration.
       </span>
     )
   } else {
@@ -296,12 +323,33 @@ export const createSelectionDescription = (selections: SelectOptions[]) => {
       <span>
         Using{' '}
         {selections.slice(0, selections.length - 1).map((s, id) => (
-          <span key={id}>{getStringForTrackOrArtist(s)}, </span>
+          <span key={id}>{getSpanForTrackOrArtist(s)}, </span>
         ))}
-        and {getStringForTrackOrArtist(selections[selections.length - 1])} as
+        and {getSpanForTrackOrArtist(selections[selections.length - 1])} as
         inspiration.
       </span>
     )
+  }
+}
+
+export const createSelectionDescriptionString = (
+  selections: SelectOptions[]
+) => {
+  if (selections.length === 1) {
+    return `with ${getStringForTrackOrArtist(selections[0])} as inspiration.`
+  }
+  if (selections.length === 2) {
+    return `with ${getStringForTrackOrArtist(
+      selections[0]
+    )} and ${getStringForTrackOrArtist(selections[1])} as inspiration.`
+  } else {
+    return `with ${selections
+      .slice(0, selections.length - 1)
+      .map(
+        (s) => `${getStringForTrackOrArtist(s)}, `
+      )} and ${getStringForTrackOrArtist(
+      selections[selections.length - 1]
+    )} as inspiration.`
   }
 }
 
@@ -318,7 +366,58 @@ export const createPlaylistTitle = (
     'target_liveness',
     'target_popularity',
   ]
+  const values: Array<{ emoji: string; weight: number }> = []
+
+  targets.forEach((t) => {
+    const val: number | null = get(state, t, null)
+    if (val) {
+      switch (t) {
+        case 'target_acousticness':
+          if (val < 0.2) {
+            values.push({ emoji: '🤖', weight: 0.2 - val })
+          } else {
+            values.push({ emoji: '🎹', weight: val - 0.2 })
+          }
+          break
+        case 'target_danceability':
+          if (val < 0.6) {
+            values.push({ emoji: '🙅‍♀️', weight: 0.6 - val })
+          } else {
+            values.push({ emoji: '💃', weight: val - 0.6 })
+          }
+          break
+        case 'target_energy':
+          if (val < 0.5) {
+            values.push({ emoji: '🥱', weight: 0.5 - val })
+          } else {
+            values.push({ emoji: '🤪', weight: val - 0.5 })
+          }
+          break
+        case 'target_valence':
+          if (val < 0.5) {
+            values.push({ emoji: '😢', weight: 0.5 - val })
+          } else {
+            values.push({ emoji: '😊', weight: val - 0.5 })
+          }
+          break
+        case 'target_popularity':
+          if (val < 0.7) {
+            values.push({ emoji: '👀', weight: 0.7 - val })
+          } else {
+            values.push({ emoji: '😎', weight: val - 0.7 })
+          }
+          break
+        default:
+          break
+      }
+    }
+  })
+
+  const useEmojis = orderBy(values, ['weight'], ['desc']).slice(0, 3)
+  console.log(values)
   // todo: use targets for names
   const date = format(new Date(), 'MMM d')
-  return `${date.toLowerCase()}: a playlist.`
+  return `${date}: ${
+    useEmojis.length ? useEmojis.map((e) => e.emoji).join('') : 'a playlist'
+  }.`
 }

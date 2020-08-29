@@ -17,6 +17,10 @@ import { formatOptions } from './formatOptions'
 import GeneratedPlaylist from './GeneratedPlaylist'
 import MarqueeComponent from './Marquee'
 import Options from './Options'
+import {
+  createSelectionDescription,
+  createSelectionDescriptionString,
+} from './SentenceDescriptions'
 
 export interface SelectOptions {
   label: string
@@ -162,7 +166,9 @@ const PlaylistCreator = () => {
         const id = await spotify
           .createPlaylist(currentUser.uid.replace('spotify:', ''), {
             name,
-            description: 'Made on musictaste.space',
+            description: `made on musictaste.space ✨ ${createSelectionDescriptionString(
+              selectedOptions
+            )}`,
             public: true,
           })
           .then((res) => res.id)
