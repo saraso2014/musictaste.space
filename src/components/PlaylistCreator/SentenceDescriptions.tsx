@@ -345,9 +345,8 @@ export const createSelectionDescriptionString = (
   } else {
     return `with ${selections
       .slice(0, selections.length - 1)
-      .map(
-        (s) => `${getStringForTrackOrArtist(s)}, `
-      )} and ${getStringForTrackOrArtist(
+      .map((s) => getStringForTrackOrArtist(s))
+      .join(', ')} and ${getStringForTrackOrArtist(
       selections[selections.length - 1]
     )} as inspiration.`
   }
