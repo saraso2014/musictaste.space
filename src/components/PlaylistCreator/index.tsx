@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import Color from 'color'
-import { cloneDeep, debounce } from 'lodash'
+import { debounce } from 'lodash'
 import Vibrant from 'node-vibrant'
 import React, { useContext, useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet'
@@ -13,6 +13,7 @@ import { AuthContext } from '../../contexts/Auth'
 import { UserDataContext } from '../../contexts/UserData'
 import Footer from '../Footer'
 import Navbar from '../Navbars/Navbar'
+import { formatOptions } from './formatOptions'
 import GeneratedPlaylist from './GeneratedPlaylist'
 import MarqueeComponent from './Marquee'
 import Options from './Options'
@@ -36,7 +37,7 @@ const PlaylistCreator = () => {
     UserDataContext
   )
   const [loading, setLoading] = useState(true)
-
+  const [availableGenres, setAvailableGenres] = useState<string[]>([])
   const [userDataOptions, setUserDataOptions] = useState<SelectOptions[]>([])
   const [selectedOptions, setSelectedOptions] = useState<SelectOptions[]>([])
   const [recommendationOptions, setRecommendationOptions] = useState<
@@ -137,40 +138,6 @@ const PlaylistCreator = () => {
     }
   }, [artistBackgroundURL])
 
-  const formatOptions = (options: SpotifyApi.RecommendationsOptionsObject) => {
-    const newOpts = cloneDeep(options)
-    if (newOpts.target_popularity) {
-      newOpts.target_popularity = Math.floor(newOpts.target_popularity * 100)
-      if (newOpts.target_popularity < 30) {
-        newOpts.max_popularity = 50
-      }
-      if (newOpts.target_popularity > 70) {
-        newOpts.min_popularity = 60
-      }
-    }
-    if (newOpts.target_valence) {
-      if (newOpts.target_valence < 0.3) {
-        newOpts.max_valence = 0.6
-      }
-      if (newOpts.target_valence > 0.7) {
-        newOpts.min_valence = 0.5
-      }
-    }
-    if (newOpts.target_acousticness) {
-      if (newOpts.target_acousticness > 0.5) {
-        newOpts.min_acousticness = 0.2
-      }
-    }
-    if (newOpts.target_energy) {
-      if (newOpts.target_energy < 0.3) {
-        newOpts.max_energy = 0.6
-      }
-      if (newOpts.target_energy > 0.7) {
-        newOpts.min_energy = 0.5
-      }
-    }
-    return newOpts
-  }
   const getSuggestions = async () => {
     if (!selectedOptions.length) {
       addToast('Provide some artists or tracks as inspiration first!', {
@@ -180,7 +147,9 @@ const PlaylistCreator = () => {
       return
     }
     return spotify
-      .getRecommendations(formatOptions(recommendationOptions))
+      .getRecommendations(
+        formatOptions(recommendationOptions, availableGenres, selectedOptions)
+      )
       .then((res) =>
         setPlaylistTracks(res.tracks as SpotifyApi.TrackObjectFull[])
       )
@@ -246,8 +215,14 @@ const PlaylistCreator = () => {
         console.error(e)
       }
     }
+    const getGenres = () => {
+      spotify
+        .getAvailableGenreSeeds()
+        .then((res) => setAvailableGenres(res.genres))
+    }
     if (importDataExists && importData && spotifyToken) {
       spotify.setAccessToken(spotifyToken)
+      getGenres()
       const ids = importData.topArtistsShortTerm.map((a) => a.id).slice(0, 20)
       if (ids) {
         getArtists(ids).then(() => setLoading(false))
@@ -389,7 +364,7 @@ const PlaylistCreator = () => {
               </div>
             )}
             <div className="w-100 h-100 d-block d-lg-none m-3" />
-            <div className="col-lg-5 offset-md-1 col output-container rounded">
+            <div className="col-lg-5 offset-lg-1 col output-container rounded">
               <GeneratedPlaylist
                 playlistTracks={playlistTracks}
                 seeds={selectedOptions}
