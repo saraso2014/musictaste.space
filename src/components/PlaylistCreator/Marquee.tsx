@@ -266,7 +266,7 @@ const MarqueeComponent = ({
   ) : (
     <div className="marquee-area" style={{ backgroundColor }}>
       <div className="w-100 h-100 d-flex flex-row justify-content-center align-items-center h1">
-        Select some seeds<Dot>.</Dot>
+        Waiting for inspiration<Dot>.</Dot>
         <Dot>.</Dot>
         <Dot>.</Dot>
       </div>

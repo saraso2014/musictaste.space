@@ -199,7 +199,7 @@ const RecommendationOptionsSelector = ({
           className="w-100 emoji-input"
           onChange={handleInputChange}
           value={input}
-          placeholder="😴"
+          placeholder="🙌"
         />
       </div>
       <div className="option-buttons d-flex flex-row">
