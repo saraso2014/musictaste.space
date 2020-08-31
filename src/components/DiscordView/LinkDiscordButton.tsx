@@ -10,7 +10,9 @@ import { Dot } from '../Aux/Dot'
 const LinkDiscordButton = () => {
   const history = useHistory()
   const { currentUser } = useContext(AuthContext)
-  const { userData, startSub, endSub } = useContext(UserDataContext)
+  const { userData, startSub, endSub, forceRefresh } = useContext(
+    UserDataContext
+  )
   const [continueText, setContinueText] = useState(<>Connect Discord</>)
   const [started, setStarted] = useState(false)
   const [unlinked, setUnlinked] = useState(false)
@@ -58,6 +60,7 @@ const LinkDiscordButton = () => {
       .then(() => {
         setContinueText(<>Connect Discord</>)
         setUnlinked(true)
+        forceRefresh()
       })
       .catch(() => {})
     GoogleAnalytics.event({

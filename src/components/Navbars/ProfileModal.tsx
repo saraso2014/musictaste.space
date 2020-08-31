@@ -18,8 +18,8 @@ const ProfileModal = (props: { isOpen: boolean; toggleModal: () => void }) => {
   const [displayConfetti, setDisplayConfetti] = useState(false)
   const { width, height } = useWindowSize()
 
-  const signOut = () => {
-    firebase.app.auth().signOut()
+  const signOut = async () => {
+    await firebase.app.auth().signOut()
     props.toggleModal()
     clearStorage()
     GoogleAnalytics.event({
